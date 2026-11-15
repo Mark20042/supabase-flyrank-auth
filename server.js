@@ -4,9 +4,14 @@
 import express from "express";
 import dotenv from "dotenv";  
 import { createClient } from "@supabase/supabase-js";
-
+import swaggerUi from "swagger-ui-express";
+import fs from "fs";
 
 dotenv.config();   
+
+const swaggerDocument = JSON.parse(
+    fs.readFileSync(new URL("./openapi.json", import.meta.url), "utf-8")
+);   
 
 
 const PORT =  process.env.PORT || 3001;
@@ -14,6 +19,9 @@ const PORT =  process.env.PORT || 3001;
 const app = express();
 
 app.use(express.json());
+
+// Stage 5: Swagger UI documentation at /docs
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_PUBLISHABLE_KEY
