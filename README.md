@@ -122,3 +122,4 @@ http://localhost:3000/docs
 
 - **`401 Unauthorized`:** *"I do not know who you are."* The request is missing credentials or presented an invalid/expired token.
 - **`403 Forbidden`:** *"I know who you are, but you do not have permission to access this resource."* (e.g. an authenticated standard user trying to access an admin dashboard).
+
