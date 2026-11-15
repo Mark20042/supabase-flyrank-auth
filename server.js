@@ -68,8 +68,8 @@ app.get("/public/info", (req, res) => {
     return res.status(200).json({ message: "Welcome stranger! This info is public." });
 });
 
-// Stage 3: Protected profile with token verification
-app.get("/protected/profile", async (req, res) => {
+// Stage 4: Reusable Authentication Middleware
+const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers["authorization"] || req.headers["Authorization"];
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ error: "Access token required" });
@@ -85,10 +85,36 @@ app.get("/protected/profile", async (req, res) => {
         return res.status(401).json({ error: "Invalid or expired token" });
     }
 
+    req.user = user;
+    next();
+};
+
+// Stage 4: Protected profile using middleware
+app.get("/protected/profile", authMiddleware, (req, res) => {
     return res.status(200).json({
-        id: user.id,
-        email: user.email,
-        created_at: user.created_at,
+        id: req.user.id,
+        email: req.user.email,
+        created_at: req.user.created_at,
+    });
+});
+
+// Stage 4: Protected logout route
+app.post("/auth/logout", authMiddleware, async (req, res) => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        return res.status(400).json({ error: error.message });
+    }
+    return res.status(204).send();
+});
+
+// Stage 4 Checkpoint: Second protected route proving middleware reusability
+app.get("/protected/dashboard", authMiddleware, (req, res) => {
+    return res.status(200).json({
+        message: "Welcome to your protected dashboard!",
+        user: {
+            id: req.user.id,
+            email: req.user.email,
+        },
     });
 });
 
